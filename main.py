@@ -68,11 +68,14 @@ class TuringMachine:
             return None
 
         # Transition logic
+        written = None
         new_state, write_symbol, direction = self.transitions[key]
         self.current_state = new_state
 
         # Write the symbol on the tape
         if self.head_position < len(self.tape):
+            if self.tape[self.head_position] != write_symbol:
+                written = self.head_position
             self.tape[self.head_position] = write_symbol
         else:
             self.tape.append(write_symbol)
@@ -82,20 +85,24 @@ class TuringMachine:
             self.head_position += 1
             if self.head_position >= len(self.tape):
                 self.tape.append(self.blank_symbol)
+                written = self.head_position
         elif direction == 'L':  # Move left
             if self.head_position > 0:
                 self.head_position -= 1
             else:
                 self.tape.insert(0, self.blank_symbol)
                 self.head_position = 0
+                written = self.head_position
 
         # Continue the execution
-        return self.transitions[key]
+        return self.transitions[key] + (written,)
 
-    def formatTape(self, tape, head_pos):
+    def formatTape(self, tape, head_pos, changed_symbol_pos):
         s = []
         for i, c in enumerate(tape):
-            if i == head_pos:
+            if i == changed_symbol_pos:
+                s.append(Fore.MAGENTA + c + Style.RESET_ALL)
+            elif i == head_pos:
                 s.append(Fore.BLUE + c + Style.RESET_ALL)
             else:
                 s.append(c)
@@ -107,29 +114,41 @@ class TuringMachine:
         :param max_steps: The maximum number of steps to execute.
         """
 
+        def makeRow(step_count, step_log):
+            if step_log:
+                new_state, write_symbol, direction, written = step_log
+            else:
+                written = None
+                write_symbol = self.tape[self.head_position]
+                direction = ' '
+            changed = self.tape[self.head_position] != write_symbol
+            row = []
+            row.append(step_count),
+            row.append(self.current_state)
+            row.append(self.formatTape(self.tape, self.head_position, written))
+            row.append(direction)
+            row.append(changed)
+            return row
+
         step_count = 0
         step_log = ""
+        tape_states = [self.tape]
         output = []
-        row = []
-        row.append(step_count),
-        row.append(self.current_state)
-        row.append(self.formatTape(self.tape, self.head_position))
-        row.append(step_log)
+        row = makeRow(step_count, None)
         output.append(row)
 
         while step_count < max_steps:
             step_count += 1
-            row = []
-            row.append(step_count),
-            row.append(self.current_state)
-            row.append(self.formatTape(self.tape, self.head_position))
-            row.append(step_log)
-            output.append(row)
             step_log = self.step()
+            tape_states.append(self.tape)
             if not step_log:
+                #row = makeRow(step_count, step_log)
+                #output.append(row)
                 break
+            row = makeRow(step_count, step_log)
+            output.append(row)
 
-        headers = ["Step", "State", "Tape", "Transition"]
+        headers = ["Step", "State", "Tape", "Direction", "Change"]
         print(tabulate(output, headers=headers))
 
         if self.current_state == self.accept_state:
