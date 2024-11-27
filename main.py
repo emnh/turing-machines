@@ -5,11 +5,15 @@
 # License: GNU GPLv3 at http://www.gnu.org/licenses/gpl.html
 
 '''
+documentation
 '''
 
 import os
 import sys
 import re
+import colorama
+from tabulate import tabulate
+from colorama import Fore, Back, Style
 
 class TuringMachine:
     def __init__(self, states, alphabet, transitions, start_state, accept_state, reject_state, blank_symbol='_'):
@@ -88,23 +92,34 @@ class TuringMachine:
         # Continue the execution
         return True
 
+    def formatTape(self, tape, head_pos):
+        s = []
+        for i, c in enumerate(tape):
+            if i == head_pos:
+                s.append(Fore.BLUE + c + Style.RESET_ALL)
+            else:
+                s.append(c)
+        return ''.join(s)
+
     def run(self, max_steps=1000):
         """
         Run the Turing machine, printing each step.
         :param max_steps: The maximum number of steps to execute.
         """
-        print("Initial tape:", ''.join(self.tape))
-        print("Initial state:", self.current_state)
+
         step_count = 0
+
+        output = []
+        output.append((step_count, self.current_state, self.formatTape(self.tape, self.head_position)))
 
         while step_count < max_steps:
             step_count += 1
-            print(f"\nStep {step_count}:")
-            print("Tape:", ''.join(self.tape))
-            print("State:", self.current_state)
-            print("Head position:", self.head_position)
+            output.append((step_count, self.current_state, self.formatTape(self.tape, self.head_position)))
             if not self.step():
                 break
+
+        headers = ["Step", "State", "Tape"]
+        print(tabulate(output, headers=headers))
 
         if self.current_state == self.accept_state:
             print("\nMachine halted in accepting state.")
@@ -115,6 +130,8 @@ class TuringMachine:
 
 # Example usage
 if __name__ == "__main__":
+    colorama.init()
+
     # Example Turing machine: increments a binary number on the tape
     states = ['q0', 'carry', 'accept', 'reject']
     alphabet = ['0', '1', '_']
