@@ -55,7 +55,7 @@ class TuringMachine:
         """
         if self.current_state in [self.accept_state, self.reject_state]:
             # Halt if the machine is in an accepting or rejecting state
-            return False
+            return None
 
         # Read the symbol at the current head position
         current_symbol = self.tape[self.head_position] if self.head_position < len(self.tape) else self.blank_symbol
@@ -65,7 +65,7 @@ class TuringMachine:
         if key not in self.transitions:
             # No transition defined, move to the reject state
             self.current_state = self.reject_state
-            return False
+            return None
 
         # Transition logic
         new_state, write_symbol, direction = self.transitions[key]
@@ -90,7 +90,7 @@ class TuringMachine:
                 self.head_position = 0
 
         # Continue the execution
-        return True
+        return self.transitions[key]
 
     def formatTape(self, tape, head_pos):
         s = []
@@ -108,17 +108,28 @@ class TuringMachine:
         """
 
         step_count = 0
-
+        step_log = ""
         output = []
-        output.append((step_count, self.current_state, self.formatTape(self.tape, self.head_position)))
+        row = []
+        row.append(step_count),
+        row.append(self.current_state)
+        row.append(self.formatTape(self.tape, self.head_position))
+        row.append(step_log)
+        output.append(row)
 
         while step_count < max_steps:
             step_count += 1
-            output.append((step_count, self.current_state, self.formatTape(self.tape, self.head_position)))
-            if not self.step():
+            row = []
+            row.append(step_count),
+            row.append(self.current_state)
+            row.append(self.formatTape(self.tape, self.head_position))
+            row.append(step_log)
+            output.append(row)
+            step_log = self.step()
+            if not step_log:
                 break
 
-        headers = ["Step", "State", "Tape"]
+        headers = ["Step", "State", "Tape", "Transition"]
         print(tabulate(output, headers=headers))
 
         if self.current_state == self.accept_state:
