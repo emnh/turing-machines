@@ -32,7 +32,7 @@ class TuringMachine:
         self.reject_state = reject_state
         self.blank_symbol = blank_symbol
         self.reset()
-    
+
     def reset(self):
         """Reset the Turing machine to its initial state and clear the tape."""
         self.tape = [self.blank_symbol]
@@ -52,10 +52,10 @@ class TuringMachine:
         if self.current_state in [self.accept_state, self.reject_state]:
             # Halt if the machine is in an accepting or rejecting state
             return False
-        
+
         # Read the symbol at the current head position
         current_symbol = self.tape[self.head_position] if self.head_position < len(self.tape) else self.blank_symbol
-        
+
         # Get the transition based on the current state and read symbol
         key = (self.current_state, current_symbol)
         if key not in self.transitions:
@@ -72,7 +72,7 @@ class TuringMachine:
             self.tape[self.head_position] = write_symbol
         else:
             self.tape.append(write_symbol)
-        
+
         # Move the head
         if direction == 'R':  # Move right
             self.head_position += 1
@@ -84,7 +84,7 @@ class TuringMachine:
             else:
                 self.tape.insert(0, self.blank_symbol)
                 self.head_position = 0
-        
+
         # Continue the execution
         return True
 
@@ -96,7 +96,7 @@ class TuringMachine:
         print("Initial tape:", ''.join(self.tape))
         print("Initial state:", self.current_state)
         step_count = 0
-        
+
         while step_count < max_steps:
             step_count += 1
             print(f"\nStep {step_count}:")
@@ -105,7 +105,7 @@ class TuringMachine:
             print("Head position:", self.head_position)
             if not self.step():
                 break
-        
+
         if self.current_state == self.accept_state:
             print("\nMachine halted in accepting state.")
         elif self.current_state == self.reject_state:
