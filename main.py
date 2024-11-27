@@ -116,15 +116,18 @@ class TuringMachine:
 # Example usage
 if __name__ == "__main__":
     # Example Turing machine: increments a binary number on the tape
-    states = ['q0', 'q1', 'q2', 'accept', 'reject']
+    states = ['q0', 'carry', 'accept', 'reject']
     alphabet = ['0', '1', '_']
     transitions = {
-        ('q0', '1'): ('q0', '1', 'R'),
+        # Move to the rightmost bit
         ('q0', '0'): ('q0', '0', 'R'),
-        ('q0', '_'): ('q1', '1', 'L'),
-        ('q1', '1'): ('q1', '1', 'L'),
-        ('q1', '0'): ('q1', '0', 'L'),
-        ('q1', '_'): ('accept', '_', 'R'),
+        ('q0', '1'): ('q0', '1', 'R'),
+        ('q0', '_'): ('carry', '_', 'L'),  # Start the carry phase
+
+        # Handle the carry
+        ('carry', '0'): ('accept', '1', 'N'),  # Stop after resolving carry
+        ('carry', '1'): ('carry', '0', 'L'),  # Propagate the carry
+        ('carry', '_'): ('accept', '1', 'N'),  # Add a new bit to the left if overflow
     }
     start_state = 'q0'
     accept_state = 'accept'
